@@ -71,7 +71,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <canvas id="presidentChart"></canvas>
+<!--                         <canvas id="presidentChart"></canvas> -->
                     </div>
                 </div>
             </div>
@@ -196,20 +196,20 @@ function renderPresident(data) {
   });
 
   // Chart
-  const ctx = document.getElementById('presidentChart').getContext('2d');
-  if (window.presidentChart instanceof Chart) {
-    window.presidentChart.destroy();
-  }
-  window.presidentChart = new Chart(ctx, {
-    type: 'pie',
-    data: {
-      labels: data.map(d => d.ชื่อ),
-      datasets: [{
-        data: data.map(d => d.คะแนน),
-        backgroundColor: ['#ff6384', '#36a2eb', '#4bc0c0', '#9966ff']
-      }]
-    }
-  });
+  // const ctx = document.getElementById('presidentChart').getContext('2d');
+  // if (window.presidentChart instanceof Chart) {
+  //   window.presidentChart.destroy();
+  // }
+  // window.presidentChart = new Chart(ctx, {
+  //   type: 'pie',
+  //   data: {
+  //     labels: data.map(d => d.ชื่อ),
+  //     datasets: [{
+  //       data: data.map(d => d.คะแนน),
+  //       backgroundColor: ['#ff6384', '#36a2eb', '#4bc0c0', '#9966ff']
+  //     }]
+  //   }
+  // });
 }
 
 
