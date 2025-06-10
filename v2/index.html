@@ -130,7 +130,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <canvas id="partyListChart"></canvas>
+<!--                         <canvas id="partyListChart"></canvas> -->
                     </div>
                 </div>
             </div>
@@ -229,19 +229,19 @@ function renderMPPartyList(data) {
     `;
   });
 
-  const ctx = document.getElementById('partyListChart').getContext('2d');
-  if (window.partyListChart) window.partyListChart.destroy();
-  window.partyListChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: data.map(d => d.พรรค),
-      datasets: [{
-        label: 'คะแนน',
-        data: data.map(d => d.คะแนน),
-        backgroundColor: '#28a745'
-      }]
-    }
-  });
+  // const ctx = document.getElementById('partyListChart').getContext('2d');
+  // if (window.partyListChart) window.partyListChart.destroy();
+  // window.partyListChart = new Chart(ctx, {
+  //   type: 'bar',
+  //   data: {
+  //     labels: data.map(d => d.พรรค),
+  //     datasets: [{
+  //       label: 'คะแนน',
+  //       data: data.map(d => d.คะแนน),
+  //       backgroundColor: '#28a745'
+  //     }]
+  //   }
+  // });
 }
 
 function renderSenators(data) {
