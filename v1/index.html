@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>รายงานผลการเลือกตั้ง</title>
+  <link rel="stylesheet" href="https://slw-system.pages.dev/assets/css/font-face.css">
+  <style>
+  	* { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'CPN', sans-serif; margin: 0; padding: 0; background: #f7f7f7; }
+    header { background: #0066cc; color: white; padding: 1rem; text-align: center; }
+    select { font-family: 'CPN', sans-serif; padding: 0.5rem; font-size: 1rem; margin: 0.5rem; }
+    .container { padding: 1rem; max-width: 900px; margin: auto; }
+    .card { background: white; padding: 1rem; margin: 0.5rem 0; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .card h3 { margin: 0; }
+    .score { font-size: 1.25rem; color: #0066cc; }
+    .filter-row { margin-top: 1rem; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>รายงานผลการเลือกตั้ง</h1>
+    <p>อัปเดตทุก 30 วินาที</p>
+  </header>
+
+  <div class="container">
+    <div class="filter-row">
+      <label for="typeSelect">ประเภท:</label>
+      <select id="typeSelect">
+        <option value="">-- เลือก --</option>
+        <option value="ประธานาธิบดี">ประธานาธิบดี</option>
+        <option value="สส.แบ่งเขต">สส.แบ่งเขต</option>
+        <option value="สส.บัญชีรายชื่อ">สส.บัญชีรายชื่อ</option>
+        <option value="สมาชิกวุฒิสภา">สมาชิกวุฒิสภา</option>
+      </select>
+
+      <label for="provinceSelect">จังหวัด:</label>
+      <select id="provinceSelect"><option value="">ทั้งหมด</option></select>
+
+      <label for="districtSelect">เขต:</label>
+      <select id="districtSelect"><option value="">ทั้งหมด</option></select>
+    </div>
+
+    <div id="results"></div>
+  </div>
+
+  <script>
+    const apiBase = 'https://script.google.com/macros/s/AKfycbyU0bYCWzHeTBK_86cMdDsTxmuha9Ysw6ou0V8PW9s-GhcJdIgG3usZNqrCuF8V6dAt/exec';
+    const typeSelect = document.getElementById('typeSelect');
+    const provinceSelect = document.getElementById('provinceSelect');
+    const districtSelect = document.getElementById('districtSelect');
+    const resultsDiv = document.getElementById('results');
+
+    let currentData = [];
+    let refreshTimer = null;
+
+    typeSelect.addEventListener('change', () => {
+      clearInterval(refreshTimer);
+      loadData();
+    });
+
+    provinceSelect.addEventListener('change', updateFilters);
+    districtSelect.addEventListener('change', renderFilteredResults);
+
+    async function loadData() {
+      const type = typeSelect.value;
+      if (!type) {
+        resultsDiv.innerHTML = '<p>กรุณาเลือกประเภท</p>';
+        return;
+      }
+
+      resultsDiv.innerHTML = '<p>กำลังโหลดข้อมูล...</p>';
+
+      try {
+        const res = await fetch(`${apiBase}?sheet=${encodeURIComponent(type)}`);
+        const data = await res.json();
+
+        if (data.error) {
+          resultsDiv.innerHTML = `<p style="color:red">${data.error}</p>`;
+          return;
+        }
+
+        currentData = data;
+        updateFilters();
+
+        refreshTimer = setInterval(loadData, 30000); // ⏱ รีเฟรชทุก 30 วินาที
+      } catch (err) {
+        resultsDiv.innerHTML = `<p style="color:red">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+        console.error(err);
+      }
+    }
+
+    function updateFilters() {
+      const provinces = [...new Set(currentData.map(item => item["จังหวัด"]).filter(Boolean))];
+      provinceSelect.innerHTML = `<option value="">ทั้งหมด</option>` + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+
+      updateDistricts();
+      renderFilteredResults();
+    }
+
+    function updateDistricts() {
+      const selectedProvince = provinceSelect.value;
+      const filtered = selectedProvince ? currentData.filter(item => item["จังหวัด"] === selectedProvince) : currentData;
+      const districts = [...new Set(filtered.map(item => item["เขต"]).filter(Boolean))];
+      districtSelect.innerHTML = `<option value="">ทั้งหมด</option>` + districts.map(d => `<option value="${d}">${d}</option>`).join('');
+    }
+
+    function renderFilteredResults() {
+      const selectedProvince = provinceSelect.value;
+      const selectedDistrict = districtSelect.value;
+
+      let filtered = currentData;
+      if (selectedProvince) filtered = filtered.filter(item => item["จังหวัด"] === selectedProvince);
+      if (selectedDistrict) filtered = filtered.filter(item => item["เขต"] == selectedDistrict);
+
+      if (!filtered.length) {
+        resultsDiv.innerHTML = `<p>ไม่พบข้อมูล</p>`;
+        return;
+      }
+
+      resultsDiv.innerHTML = filtered.map(entry => {
+        let inner = `<div class="card">`;
+        for (const key in entry) {
+          if (key === "คะแนน" || key === "คะแนนรวม") {
+            inner += `<p class="score"><strong>${key}:</strong> ${entry[key]}</p>`;
+          } else {
+            inner += `<p><strong>${key}:</strong> ${entry[key]}</p>`;
+          }
+        }
+        inner += `</div>`;
+        return inner;
+      }).join('');
+    }
+  </script>
+
+</body>
+</html>
